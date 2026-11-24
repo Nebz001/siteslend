@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. Names follow the shadcn/ui convention (background, card,
+  muted-foreground, primary, destructive...) so spartan/ui components can use
+  them later without renaming. Use these in templates, not raw colours.
+  Contrast: foreground/background about 16:1, muted-foreground on card about 7:1,
+  success and destructive text on their tinted backgrounds above 6:1.
+*/
+@theme {
+  --color-background: #f6f7f9;
+  --color-foreground: #111827;
+  --color-card: #ffffff;
+  --color-border: #d5dae1;
+  --color-muted: #eceff3;
+  --color-muted-foreground: #4b5563;
+  --color-primary: #0f5c63;
+  --color-primary-foreground: #ffffff;
+  --color-success: #166534;
+  --color-success-muted: #dcfce7;
+  --color-destructive: #b91c1c;
+  --color-destructive-muted: #fef2f2;
+  --color-ring: #0f5c63;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}

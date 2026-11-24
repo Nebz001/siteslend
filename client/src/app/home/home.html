@@ -1,0 +1,74 @@
+<section aria-labelledby="status-heading" class="flex flex-col gap-6">
+  <div class="flex flex-col gap-2">
+    <h1 id="status-heading" class="text-2xl font-semibold tracking-tight">System status</h1>
+    <p class="text-muted-foreground">
+      Checks that the API is running and can reach its database.
+    </p>
+  </div>
+
+  <!-- Asset-tag style card: the label strip echoes the tags on borrowed equipment. -->
+  <div class="overflow-hidden rounded-lg border border-border bg-card" [attr.aria-busy]="state() === 'loading'">
+    <div class="border-b border-border bg-muted px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+      System check
+    </div>
+
+    @switch (state()) {
+      @case ('loading') {
+        <div role="status" class="flex flex-col gap-4 p-4">
+          <span class="sr-only">Checking system status…</span>
+          <div aria-hidden="true" class="flex items-center justify-between">
+            <div class="h-4 w-16 animate-pulse rounded bg-muted motion-reduce:animate-none"></div>
+            <div class="h-6 w-24 animate-pulse rounded bg-muted motion-reduce:animate-none"></div>
+          </div>
+          <div aria-hidden="true" class="flex items-center justify-between">
+            <div class="h-4 w-20 animate-pulse rounded bg-muted motion-reduce:animate-none"></div>
+            <div class="h-6 w-28 animate-pulse rounded bg-muted motion-reduce:animate-none"></div>
+          </div>
+        </div>
+      }
+
+      @case ('error') {
+        <div role="alert" class="flex flex-col items-start gap-3 bg-destructive-muted p-4 text-destructive">
+          <p class="font-medium">Can't reach the API</p>
+          <p class="text-sm">
+            The request to /api/health failed. Make sure the API is running (see the README), then try again.
+          </p>
+          <button
+            type="button"
+            (click)="load()"
+            class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            Try again
+          </button>
+        </div>
+      }
+
+      @case ('ready') {
+        <dl class="flex flex-col divide-y divide-border">
+          @for (row of rows(); track row.label) {
+            <div class="flex items-center justify-between gap-4 px-4 py-3">
+              <dt class="font-medium">{{ row.label }}</dt>
+              <dd
+                class="inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-sm font-medium"
+                [class.bg-success-muted]="row.ok"
+                [class.text-success]="row.ok"
+                [class.bg-destructive-muted]="!row.ok"
+                [class.text-destructive]="!row.ok"
+              >
+                <span aria-hidden="true">{{ row.ok ? '✓' : '✕' }}</span>
+                {{ row.ok ? row.okText : row.failText }}
+              </dd>
+            </div>
+          }
+        </dl>
+
+        @if (databaseDown()) {
+          <p class="border-t border-border bg-destructive-muted px-4 py-3 text-sm text-destructive">
+            The API is running but can't reach PostgreSQL. Check that the database is running and the connection
+            string is set in user-secrets (see the README).
+          </p>
+        }
+      }
+    }
+  </div>
+</section>
