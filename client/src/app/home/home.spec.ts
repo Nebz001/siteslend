@@ -53,7 +53,10 @@ describe('Home', () => {
     const alert = page().querySelector('[role="alert"]');
     expect(alert?.textContent).toContain("Can't reach the API");
 
-    (alert?.querySelector('button') as HTMLButtonElement).click();
+    const retry = alert?.querySelector('button') as HTMLButtonElement;
+    expect(retry.dataset['slot']).toBe('button');
+    expect(retry.textContent?.trim()).toBe('Try again');
+    retry.click();
     await fixture.whenStable();
 
     // Retry went back to loading and sent a second request.
