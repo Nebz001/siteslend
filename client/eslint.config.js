@@ -34,6 +34,14 @@ module.exports = defineConfig([
     },
   },
   {
+    // Spartan Helm files are generated with hlm* selectors, not the app prefix.
+    files: ['src/app/ui/**/*.ts'],
+    rules: {
+      '@angular-eslint/directive-selector': 'off',
+      '@angular-eslint/component-selector': 'off',
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {},
