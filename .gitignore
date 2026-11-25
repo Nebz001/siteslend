@@ -481,3 +481,11 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 docs/project-cheat-sheet.md
+
+
+# Local environment files (.env.example stays committable)
+.env.*
+!.env.example
+
+# Claude Code personal settings
+.claude/settings.local.json

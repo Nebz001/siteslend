@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "plan",
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet format *)",
+      "Bash(npm run lint *)",
+      "Bash(npm test *)",
+      "Bash(npm run build *)"
+    ],
+    "ask": [
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet new *)",
+      "Bash(dotnet ef *)",
+      "Bash(npx *)",
+      "Bash(ng *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(psql *)",
+      "Bash(curl *)",
+      "Bash(wget *)"
+    ],
+    "deny": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git reset *)",
+      "Bash(git rebase *)",
+      "Bash(git clean *)",
+      "Bash(git remote *)",
+      "Bash(rm -rf *)",
+      "Bash(dotnet ef database drop *)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Edit(./.claude/settings.json)",
+      "Edit(./AGENTS.md)",
+      "Edit(./CLAUDE.md)"
+    ]
+  }
+}
