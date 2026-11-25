@@ -1,4 +1,5 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { Subscription } from 'rxjs';
 import { Health } from '../health/health.model';
 import { HealthService } from '../health/health.service';
@@ -7,6 +8,7 @@ type LoadState = 'loading' | 'error' | 'ready';
 
 @Component({
   selector: 'app-home',
+  imports: [HlmButton],
   templateUrl: './home.html',
 })
 export class Home {
