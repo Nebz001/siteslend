@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="api.Tests/SitesLend.Api.Tests.csproj" />
+  <Project Path="api/SitesLend.Api.csproj" />
+</Solution>
