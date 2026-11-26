@@ -278,6 +278,31 @@ Both drill descriptions are drafts and need human review. Drill 1 was planted by
 - **Decision:** Draft, needs human review
 - **Why:** Not decided yet. The human checks and finishes this entry.
 
+#### Entry 10
+
+- **Date:** 2026-11-26
+- **Task:** A05 (pull request)
+- **Tool:** Claude Code
+- **What I asked (short):** Create the pull request for `feat/a05-asset-list`, with a title and a description. I merge it myself.
+- **What it produced or changed:**
+  - No project file changed except this entry. Nothing was committed or pushed by the agent.
+  - Read the branch with read-only git commands: 9 commits ahead of `main`, 43 files changed, no upstream. Found `gh` not logged in. Read the A05 entry (Entry 7) and `AssetsController.cs` to write the description.
+  - Wrote the PR title and body to a scratchpad file (outside the repo). The body has a summary, a "Things to check in review" list (anonymous `GET /api/assets` until A11, entity field sizes versus `docs/erd.md`, commits before `22bbf08` not building alone, no browser check yet) and a test plan.
+  - Because the agent may not push, I ran `gh auth login` and `git push -u origin feat/a05-asset-list` myself. The first login timed out, but the push succeeded. A second `gh auth login` worked.
+  - After I logged in, the agent ran `gh pr create` and opened PR #3: `feat: asset list vertical slice (A05)`, `feat/a05-asset-list` into `main`.
+- **Checks I ran:** `git log`, `git diff --stat`, `git branch -vv`, `gh auth status`. No build, lint or tests were run for this step.
+- **To do:**
+  - Read PR #3 on GitHub and fix anything in the description that is wrong.
+  - The test results in the PR body (14 of 14 API tests, 9 of 9 client tests, lint, build) were copied from Entry 7, not re-run. Re-run them if you want fresh numbers.
+  - The agent read the diff stat and one controller, not the whole diff. It did not scan the diff for secrets, so the PR line "No secrets or real data" is unverified. Check the diff yourself.
+  - Decide how to merge. The agent suggested a squash merge because earlier commits do not build alone (see Entry 7).
+  - Tick the unchecked test-plan item (look at `/assets` at desktop and phone width) before or after merging.
+  - Entry 7 still says "Draft, needs human review", and its "history" decision is still open.
+  - `ai-use-log-backup.md` (gitignored) was not refreshed. Copy this log over it if you keep using it.
+  - If VS Code has this file open with unsaved edits, it may show "content of the file is newer" (see Entry 9). Use **File: Revert File**, never Overwrite.
+- **Decision:** Draft, needs human review
+- **Why:** Not decided yet. The human checks and finishes this entry.
+
 ## Setup (task ID to confirm)
 
 ### Entries
