@@ -10,7 +10,7 @@ Design tokens. The shared names (background, card, primary, ...) are plain CSS
 variables below, and the Spartan preset maps them to Tailwind colours. Define
 each colour once, here. Use these in templates, not raw colours.
 Contrast: foreground/background about 16:1, muted-foreground on card about 7:1,
-success and destructive text on their tinted backgrounds above 5.9:1.
+success, warning, info and destructive text on their tinted backgrounds above 5.9:1.
 `border` is for dividers and cards. Form controls use `input`, which is darker
 so the control edge reaches 3:1 against the page (WCAG 1.4.11).
 */
@@ -42,6 +42,10 @@ so the control edge reaches 3:1 against the page (WCAG 1.4.11).
 @theme {
   --color-success: #166534;
   --color-success-muted: #dcfce7;
+  --color-warning: #92400e;
+  --color-warning-muted: #fef3c7;
+  --color-info: #1e40af;
+  --color-info-muted: #dbeafe;
   --color-destructive-muted: #fef2f2;
 
   --font-sans:
