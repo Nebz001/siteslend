@@ -1,0 +1,12 @@
+# Let Git normalize line endings, and pin the types we edit on both Windows and Linux.
+* text=auto
+
+*.cs   text eol=lf
+*.ts   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.sh   text eol=lf
+
+# Visual Studio solution files expect Windows line endings.
+*.sln  text eol=crlf
+*.slnx text eol=crlf
