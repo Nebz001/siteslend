@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using SitesLend.Api.Data;
 using SitesLend.Api.Services;
@@ -6,7 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// Enums go over the wire as readable text ("Available"), matching how they are stored.
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -18,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
     options.UseNpgsql(connectionString ?? string.Empty);
 });
 builder.Services.AddScoped<IHealthService, HealthService>();
+builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<DbSeeder>();
 
 var app = builder.Build();
 
@@ -25,6 +30,9 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // Sample data for local work only. Runs after startup so a down database never blocks the API.
+    app.Lifetime.ApplicationStarted.Register(() => _ = DbSeeder.RunSafelyAsync(app.Services));
 }
 
 app.UseHttpsRedirection();
