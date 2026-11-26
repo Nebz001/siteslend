@@ -1,41 +1,43 @@
--- SitesLend: one-time database setup.
+-- SitesLend: fresh database setup (run once, on an empty server).
 -- Run this yourself in pgAdmin (Query Tool). The AI agent never runs it.
 --
 -- Run as a PostgreSQL superuser (usually "postgres").
--- Steps 1 and 2 run while connected to the default "postgres" database.
--- Steps 3 and 4 run while connected to the "siteslend" database.
+-- The app connects as siteslend_app only: no superuser, no create-database, no create-role.
 --
 -- Before running: replace <CHOOSE_A_STRONG_PASSWORD> in step 1.
 -- Never commit the real password. It belongs only in dotnet user-secrets (see README).
+--
+-- Steps 1 to 3 run while connected to the default "postgres" database.
+-- Step 4 runs once in "siteslend" and once in "siteslend_test".
 
--- 1. Create the application login. No superuser, no create-database, no create-role.
---    Skip this step if the role already exists.
+-- 1. Application login.
 CREATE ROLE siteslend_app
     LOGIN
     PASSWORD '<CHOOSE_A_STRONG_PASSWORD>'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
 
--- 2. Create the database if it does not exist yet (CREATE DATABASE cannot run
---    inside a transaction block, so run it on its own).
---    Skip this step if "siteslend" already exists.
-CREATE DATABASE siteslend;
+-- 2. The two databases, owned by siteslend_app.
+--    IMPORTANT: CREATE DATABASE cannot run inside a transaction block, so run these
+--    two statements ONE AT A TIME (select one statement, run it, then the next).
+CREATE DATABASE siteslend
+    OWNER siteslend_app
+    ENCODING 'UTF8'
+    TEMPLATE template0;
 
--- 3. Connect to "siteslend". Only siteslend_app (and superusers) may connect to it.
---    siteslend_app is granted nothing on any other database. Note that PostgreSQL
---    lets every login CONNECT to a database by default, so on other databases it can
---    connect but can read and change nothing. To block even that, run
---    REVOKE CONNECT ON DATABASE <name> FROM PUBLIC; on each of them.
+CREATE DATABASE siteslend_test
+    OWNER siteslend_app
+    ENCODING 'UTF8'
+    TEMPLATE template0;
+
+-- 3. Only the owner (and superusers) may connect. Other logins get no access at all.
 REVOKE ALL ON DATABASE siteslend FROM PUBLIC;
-GRANT CONNECT ON DATABASE siteslend TO siteslend_app;
+REVOKE ALL ON DATABASE siteslend_test FROM PUBLIC;
 
--- 4. Still in "siteslend": allow siteslend_app to use and create objects in the
---    public schema. EF Core migrations run as this user, so it needs CREATE.
---    (Since PostgreSQL 15, ordinary users no longer get CREATE on "public" by default.)
-GRANT USAGE, CREATE ON SCHEMA public TO siteslend_app;
+-- 4. Connect to "siteslend" and run the next line. Then connect to "siteslend_test"
+--    and run it again. EF Core migrations run as siteslend_app and create tables
+--    in the public schema, so it must own that schema.
+ALTER SCHEMA public OWNER TO siteslend_app;
 
--- Objects that siteslend_app creates (tables from migrations) are owned by it,
--- so no further GRANT or ALTER DEFAULT PRIVILEGES is needed.
-
--- Optional check, still in "siteslend", connected as siteslend_app:
+-- Optional check, connected as siteslend_app to each database:
 --   SELECT current_user, current_database();
--- Expected: siteslend_app | siteslend
+-- Expected: siteslend_app | siteslend   (and siteslend_app | siteslend_test)

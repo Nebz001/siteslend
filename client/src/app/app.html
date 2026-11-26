@@ -6,12 +6,30 @@
 </a>
 
 <header class="border-b border-border bg-card">
-  <div class="mx-auto flex max-w-3xl items-baseline gap-3 px-4 py-4 sm:px-6">
+  <div class="mx-auto flex max-w-5xl flex-wrap items-baseline gap-x-3 gap-y-2 px-4 py-4 sm:px-6">
     <span class="text-lg font-semibold tracking-tight">SitesLend</span>
     <span class="text-sm text-muted-foreground">IT asset borrowing</span>
+
+    <nav aria-label="Main" class="ml-auto flex gap-4 text-sm font-medium">
+      <a
+        routerLink="/"
+        routerLinkActive="text-foreground underline underline-offset-4"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        class="text-muted-foreground hover:text-foreground"
+        >Status</a
+      >
+      <a
+        routerLink="/assets"
+        routerLinkActive="text-foreground underline underline-offset-4"
+        ariaCurrentWhenActive="page"
+        class="text-muted-foreground hover:text-foreground"
+        >Assets</a
+      >
+    </nav>
   </div>
 </header>
 
-<main id="main" class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+<main id="main" class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
   <router-outlet />
 </main>

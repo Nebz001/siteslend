@@ -27,27 +27,34 @@ Rules for AI coding agents are in `AGENTS.md` and `CLAUDE.md`.
 
 ### 1. Create the database
 
-In pgAdmin, connected to your local PostgreSQL server as `postgres`, create an empty database named `siteslend`. In the Query Tool you can run:
-
-```sql
-CREATE DATABASE siteslend;
-```
-
-This setup connects as the `postgres` superuser, which is fine for a local training machine and never for a shared or deployed server. For a safer setup with a limited `siteslend_app` user that has rights only on `siteslend`, follow `docs/db-setup.sql` instead and use `Username=siteslend_app` (with its password) in step 2.
+In pgAdmin, connected as a superuser (`postgres`), run `docs/db-setup.sql` once. It creates the `siteslend_app` login (no superuser, no create-database, no create-role) and two empty databases owned by it: `siteslend` (the app) and `siteslend_test` (the tests). Replace the password placeholder first and run the two `CREATE DATABASE` statements one at a time. The app and the tests connect as `siteslend_app` only, never as `postgres`.
 
 ### 2. Give the API its connection string (user-secrets)
 
 The connection string is never stored in a committed file. Store it in .NET user-secrets, which keeps it in your user profile outside the repository:
 
 ```bash
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=siteslend;Username=postgres" --project api
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=siteslend;Username=siteslend_app;Password=YOUR_PASSWORD" --project api
+dotnet user-secrets set "ConnectionStrings:TestConnection" "Host=localhost;Port=5432;Database=siteslend_test;Username=siteslend_app;Password=YOUR_PASSWORD" --project api
 ```
 
-If your `postgres` user has a password, add `;Password=YOUR_PASSWORD` to the end of the connection string. Do not commit the password.
+Replace `YOUR_PASSWORD` with the password you chose in `docs/db-setup.sql`. Never put the real password in a committed file. The second secret is used only by `dotnet test` (see Test, lint and format).
 
 `api/appsettings.Example.json` shows the shape of the setting with placeholder values. It is documentation only and is never loaded.
 
-### 3. Install client packages
+### 3. Create the tables
+
+Schema changes happen only through EF Core migrations. This creates the asset tables in the `siteslend` database:
+
+```bash
+dotnet ef database update --project api
+```
+
+The first run on an empty database logs a failed `SELECT` on `__EFMigrationsHistory` (the table does not exist yet). This is expected: EF Core then creates the table and applies the migration.
+
+When the API starts in Development and both tables are empty, it adds synthetic sample data (4 categories, 12 asset units). It never seeds outside Development, and never when the tables already have rows. If the database is down or not migrated, the API still starts and logs a warning.
+
+### 4. Install client packages
 
 ```bash
 cd client
@@ -81,6 +88,8 @@ What you should see on the home page:
 
 You can also check the API directly: `https://localhost:7029/api/health` returns `{"status":"ok","database":"up"}`.
 
+The asset list is at <http://localhost:4200/assets> (also linked in the page header). It is read only. Its data comes from `GET /api/assets?page=1&pageSize=20` (page size 1 to 100). This endpoint is anonymous for now and gets a login requirement in task A11.
+
 ## Test, lint and format
 
 | Purpose | Command (run from the repository root unless noted) |
@@ -93,16 +102,20 @@ You can also check the API directly: `https://localhost:7029/api/health` returns
 | Test the client | `cd client && npm test` |
 | Lint the client | `cd client && npm run lint` |
 
-`dotnet test` needs the database from steps 1 and 2 for one test (`Get_health_returns_ok_and_database_up`). It uses the same user-secret as the API. The other API test and all client tests need no database.
+`dotnet test` needs PostgreSQL running and touches only `siteslend_test`, never your dev database `siteslend`. Every API test, including the health tests, runs with the environment set to `Testing` (no user-secrets for the app, no sample-data seeder) and uses the `TestConnection` user-secret from step 2. The test database must already exist (created by `docs/db-setup.sql`, because `siteslend_app` cannot create databases). The tests apply the migrations to it themselves and empty its tables, so they refuse to run against any database that is not named exactly `siteslend_test`, and a test fails if the test host uses another one.
+
+Instead of the user-secret you can set the environment variable `SITESLEND_TEST_CONNECTION` to the same value. Client tests need no database.
 
 ## Troubleshooting
 
 - **Home page says "Can't reach the API", but the API is running.** Run the API with `--launch-profile https`. The dev proxy targets `https://localhost:7029`.
 - **Browser warns about the certificate.** Run `dotnet dev-certs https --trust` and restart the browser.
-- **`database: "down"` although PostgreSQL is running.** Check that the user-secret exists and matches the user (`postgres`) and password of your PostgreSQL server: `dotnet user-secrets list --project api` (this prints the value, so don't share your screen).
-- **`role "…" does not exist`.** The `Username` in the user-secret is misspelled or not a real role. It should be `postgres`. Set the secret again (step 2).
-- **"password authentication failed".** The password in the user-secret differs from the one your `postgres` user has, or your server needs a password and the secret has none. Set the secret again (step 2).
-- **`database "siteslend" does not exist`.** Create it (step 1).
+- **`database: "down"` although PostgreSQL is running.** Check that the user-secret exists and matches the user (`siteslend_app`) and password you set in `docs/db-setup.sql`: `dotnet user-secrets list --project api` (this prints the value, so don't share your screen).
+- **`role "…" does not exist`.** The `Username` in the user-secret is misspelled or not a real role. It should be `siteslend_app`. Set the secret again (step 2).
+- **"password authentication failed".** The password in the user-secret differs from the one you set for `siteslend_app` in `docs/db-setup.sql`, or the secret has none. Set the secret again (step 2).
+- **`database "siteslend" does not exist`.** Run `docs/db-setup.sql` (step 1).
+- **Assets page is empty, or the API log says `Development seeding skipped`.** The tables are missing. Run `dotnet ef database update --project api` (step 3), then restart the API.
+- **`No test database configured`.** Set the `TestConnection` user-secret or `SITESLEND_TEST_CONNECTION` (see Test, lint and format).
 - **To see the exact reason a connection failed,** run `dotnet test --filter "FullyQualifiedName~database_up" --logger "console;verbosity=detailed"` and look for the `Npgsql.PostgresException` line. It never contains a password.
 
 ## Rules for contributors

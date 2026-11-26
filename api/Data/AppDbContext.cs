@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using SitesLend.Api.Entities;
 
 namespace SitesLend.Api.Data;
 
-// Empty on purpose. Entities and DbSets arrive with the first migration task.
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public DbSet<AssetCategory> AssetCategories => Set<AssetCategory>();
+
+    public DbSet<AssetUnit> AssetUnits => Set<AssetUnit>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+        => modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 }
